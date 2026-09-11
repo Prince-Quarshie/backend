@@ -3,9 +3,11 @@ require("dotenv").config();
 const express = require("express");
 const taskRoutes = require("./Routes/taskRoutes");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const server = express();
 server.use(express.json());
+server.use(cors());
 
 const PORT = process.env.PORT || 3020;
 
