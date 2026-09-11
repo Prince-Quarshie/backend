@@ -1,5 +1,8 @@
 const taskModel = require("../Models/taskModel");
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
+
+const hasValidId = (id) => mongoose.isValidObjectId(id);
 
 //create task
 const createTask = (req, res) => {
@@ -25,7 +28,7 @@ const createTask = (req, res) => {
     })
     .catch((error) => {
       // send an error response
-      res.status(500).json({ message: "Error creating task", error });
+    res.status(500).json({ message: "Error creating task" });
     });
 };
 
@@ -34,6 +37,9 @@ const createTask = (req, res) => {
 const returnTask = (req, res) => {
     const taskId = req.params.id;
     if (taskId) {
+        if (!hasValidId(taskId)) {
+            return res.status(400).json({ error: "Invalid task ID" });
+        }
         taskModel.findById(taskId)
             .then((task) => {
                 if (!task) {
@@ -67,19 +73,26 @@ const updateTask = (req, res) => {
     const taskId = req.params.id;
     const { title, description, completed, dueDate } = req.body;
 
+    if (!hasValidId(taskId)) {
+        return res.status(400).json({ error: "Invalid task ID" });
+    }
+
     taskModel.findById(taskId)
        .then((task) => {
             if (!task) {
-                return res.status(404).json({ error: "Task not found" });
+                return null;
             }
 
-            task.title = title || task.title;
-            task.description = description || task.description;
+            task.title = title !== undefined ? title : task.title;
+            task.description = description !== undefined ? description : task.description;
             task.completed = completed !== undefined ? completed : task.completed;
-            task.dueDate = dueDate || task.dueDate;
+            task.dueDate = dueDate !== undefined ? dueDate : task.dueDate;
             return task.save();
         })
         .then((task) => {
+            if (!task) {
+                return res.status(404).json({ error: "Task not found" });
+            }
             res.status(200).json({
                 message: "Task updated successfully",
                 data: task
@@ -93,6 +106,10 @@ const updateTask = (req, res) => {
 //delete task
 const deleteTask = (req, res) => {
     const taskId = req.params.id;
+
+    if (!hasValidId(taskId)) {
+        return res.status(400).json({ error: "Invalid task ID" });
+    }
 
     taskModel.findByIdAndDelete(taskId)
         .then((deletetask) => {
