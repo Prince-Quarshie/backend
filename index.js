@@ -14,7 +14,7 @@ server.use("/tasks", taskRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
-    server.listen(PORT, "localhost", () => {
+    server.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is running on port http://localhost:${PORT}`);
     });
 })
